@@ -1,0 +1,39 @@
+services:
+  prodvigaeff-control:
+    image: eclipse-temurin:17-jdk-alpine
+    container_name: prodvigaeff-control-app
+    restart: unless-stopped
+    volumes:
+      - ./prodvigaeff-control.jar:/app/prodvigaeff-control.jar:ro
+      - ./.env:/app/.env:ro
+    working_dir: /app
+    command: ["java", "-Xms256m", "-Xmx1024m", "-jar", "prodvigaeff-control.jar"]
+    environment:
+      - TZ=Europe/Riga
+      - JAVA_OPTS=-Dfile.encoding=UTF-8 -Duser.timezone=Europe/Riga
+    healthcheck:
+      test: ["CMD", "sh", "-c", "pgrep -f 'prodvigaeff-control.jar' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 1280M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.25'
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    networks:
+      - prodvigaeff-network
+
+networks:
+  prodvigaeff-network:
+    driver: bridge
+    name: prodvigaeff-control-network

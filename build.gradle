@@ -1,0 +1,47 @@
+plugins
+{
+    id 'java'
+    id 'org.springframework.boot' version '3.2.0'
+}
+
+group = 'ru.prodvigaeff'
+version = '1.0.0'
+java.sourceCompatibility = JavaVersion.VERSION_17
+
+repositories
+{
+    mavenCentral()
+}
+
+dependencies
+{
+    // JSON обработка
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.16.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.0'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.16.0'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.16.0'
+
+    // HTTP клиент
+    implementation 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
+
+    // Email отправка
+    implementation 'javax.mail:javax.mail-api:1.6.2'
+    implementation 'com.sun.mail:javax.mail:1.6.2'
+
+    // Логирование
+    implementation 'org.slf4j:slf4j-api:2.0.9'
+    implementation 'ch.qos.logback:logback-classic:1.4.14'
+
+    // Утилиты
+    implementation 'org.apache.commons:commons-lang3:3.14.0'
+}
+jar
+{
+    enabled = false
+}
+
+bootJar
+{
+    archiveFileName = 'work-guard.jar'
+    mainClass = 'ru.prodvigaeff.workguard.Application'
+}
