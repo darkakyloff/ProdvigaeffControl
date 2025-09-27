@@ -258,15 +258,10 @@ public class MegaplanTask
 
         try
         {
-            // ОТЛАДКА: посмотрим что в empData
-            Logger.debug("Employee data keys: " + empData.keySet());
-            Logger.debug("Employee data: " + empData);
 
             String id = (String) empData.get("id");
             String name = (String) empData.get("name");
             String position = (String) empData.get("position");
-
-            Logger.debug("Parsed employee - id: " + id + ", name: " + name + ", position: " + position);
 
             String email = findEmail((List) empData.get("contactInfo"));
 
@@ -415,7 +410,6 @@ public class MegaplanTask
 
         String baseUrl = EnvUtil.get("MEGAPLAN_URL", "https://prodvigaeff.megaplan.ru");
 
-        // Добавляем параметры для получения полной информации о задаче
         String jsonParam = "{\"fields\":[\"id\",\"name\",\"status\",\"owner\",\"responsible\",\"subTasks\",\"timeCreated\",\"activity\"]}";
         String endpoint = baseUrl + "/api/v3/task/" + taskId + "?" + StringUtil.urlEncode(jsonParam);
 

@@ -4,7 +4,12 @@ import ru.prodvigaeff.control.core.module.ModuleRegistry;
 import ru.prodvigaeff.control.core.scheduler.Timer;
 import ru.prodvigaeff.control.megaplan.managers.MegaplanTask;
 import ru.prodvigaeff.control.modules.cache.CacheCleanupModule;
-import ru.prodvigaeff.control.modules.worktime.WorktimeModule;
+import ru.prodvigaeff.control.modules.taskhierarchy.TaskHierarchyAuditModule;
+import ru.prodvigaeff.control.modules.worktime.WorkTimeAuditModule;
+import ru.prodvigaeff.control.service.EmailSender;
+import ru.prodvigaeff.control.service.SimpleEmailSender;
+import ru.prodvigaeff.control.service.SmtpClient;
+import ru.prodvigaeff.control.service.TemplateProcessor;
 import ru.prodvigaeff.control.utils.EnvUtil;
 import ru.prodvigaeff.control.utils.Logger;
 
@@ -100,7 +105,13 @@ public class Application
     {
         try
         {
-            ModuleRegistry.register(new WorktimeModule());
+            TemplateProcessor templateProcessor = new TemplateProcessor();
+            SmtpClient smtpClient = new SmtpClient();
+            EmailSender emailSender = new SimpleEmailSender(templateProcessor, smtpClient);
+
+            ModuleRegistry.register(new WorkTimeAuditModule(emailSender));
+            ModuleRegistry.register(new TaskHierarchyAuditModule(emailSender));
+
             ModuleRegistry.register(new CacheCleanupModule());
 
             int moduleCount = ModuleRegistry.getModuleCount();

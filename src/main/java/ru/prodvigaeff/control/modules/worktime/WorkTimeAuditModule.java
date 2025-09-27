@@ -1,17 +1,27 @@
 package ru.prodvigaeff.control.modules.worktime;
 
 import ru.prodvigaeff.control.core.module.AbstractModule;
-import ru.prodvigaeff.control.model.Task;
+import ru.prodvigaeff.control.service.EmailSender;
 import ru.prodvigaeff.control.utils.Logger;
 
-import java.util.HashMap;
+import java.time.LocalDateTime;
+import java.util.List;
 
-public class WorktimeModule extends AbstractModule
+public class WorkTimeAuditModule extends AbstractModule
 {
+    private final WorkTimeChecker checker;
+    private final WorkTimeNotifier notifier;
+
+    public WorkTimeAuditModule(EmailSender emailSender)
+    {
+        this.checker = new WorkTimeChecker();
+        this.notifier = new WorkTimeNotifier(emailSender);
+    }
+
     @Override
     public String getName()
     {
-        return "WorktimeAuditor";
+        return "WorkTimeAuditor";
     }
 
     @Override
@@ -26,17 +36,16 @@ public class WorktimeModule extends AbstractModule
         Logger.info("Начинаем аудит рабочего времени");
 
         long startTime = System.currentTimeMillis();
+        List<WorkTimeViolation> violations = checker.checkViolations(LocalDateTime.now());
 
-        HashMap<Task, Task.TaskComment> violations = WorkTimeExecutor.getViolation();
-
-        if (violations.isEmpty()) Logger.info("Нарушений не найдено");
-
+        if (violations.isEmpty())
+        {
+            Logger.info("Нарушений не найдено");
+        }
         else
         {
             Logger.info("Найдено нарушений: " + violations.size());
-
-            Logger.info("Отправляем email уведомления");
-            WorkTimeExecutor.sendEmailMessages(violations);
+            notifier.sendNotifications(violations);
             Logger.success("Все уведомления отправлены");
         }
 

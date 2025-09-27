@@ -50,7 +50,6 @@ public class HttpUtil
 
                 Logger.debugResponse(response.getStatusCode(), response.getBody());
 
-                // Проверяем, нужно ли повторить запрос для определенных кодов ошибок
                 if (shouldRetry(response.getStatusCode(), attempt, maxRetries))
                 {
                     Logger.warn("HTTP " + response.getStatusCode() + " для " + request.getUrl() +
@@ -98,7 +97,6 @@ public class HttpUtil
     {
         if (attempt >= maxRetries) return false;
 
-        // Повторяем для серверных ошибок и некоторых клиентских
         return statusCode >= 500 || statusCode == 429 || statusCode == 408 || statusCode == 502 || statusCode == 503 || statusCode == 504;
     }
 
