@@ -43,5 +43,5 @@ jar
 bootJar
 {
     archiveFileName = 'work-guard.jar'
-    mainClass = 'ru.prodvigaeff.workguard.Application'
+    mainClass = 'ru.prodvigaeff.control.Application'
 }

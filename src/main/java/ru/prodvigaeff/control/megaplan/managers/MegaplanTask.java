@@ -127,14 +127,9 @@ public class MegaplanTask
         String endpoint = baseUrl + "/api/v3/task?";
 
         String jsonParam;
-        if (pageAfter != null)
-        {
-            jsonParam = "{\"limit\":100,\"pageAfter\":{\"contentType\":\"Task\",\"id\":\"" + pageAfter + "\"}}";
-        }
-        else
-        {
-            jsonParam = "{\"limit\":100}";
-        }
+
+        if (pageAfter != null) jsonParam = "{\"limit\":100,\"pageAfter\":{\"contentType\":\"Task\",\"id\":\"" + pageAfter + "\"},\"fields\":[\"id\",\"name\",\"status\",\"owner\",\"responsible\",\"subTasks\",\"timeCreated\",\"activity\"]}";
+        else jsonParam = "{\"limit\":100,\"fields\":[\"id\",\"name\",\"status\",\"owner\",\"responsible\",\"subTasks\",\"timeCreated\",\"activity\"]}";
 
         return endpoint + StringUtil.urlEncode(jsonParam);
     }
@@ -200,8 +195,25 @@ public class MegaplanTask
 
             Task.Employee owner = parseEmployee((Map) taskData.get("owner"));
             Task.Employee responsible = parseEmployee((Map) taskData.get("responsible"));
+            LocalDateTime timeCreated = parseDateTime((Map) taskData.get("timeCreated"));
+            LocalDateTime activity = parseDateTime((Map) taskData.get("activity"));
 
-            return new Task(id, name, status, owner, responsible);
+            Task task = new Task(id, name, status, owner, responsible);
+            task.setTimeCreated(timeCreated);
+            task.setActivity(activity);
+
+            if (taskData.containsKey("subTasks")) {
+                List<Map<String, Object>> subTasks = (List<Map<String, Object>>) taskData.get("subTasks");
+
+                List<String> subtaskIds = subTasks.stream()
+                        .map(sub -> (String) sub.get("id"))
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+
+                task.setSubtaskIds(subtaskIds);
+            }
+
+            return task;
         }
         catch (Exception e)
         {
@@ -246,9 +258,15 @@ public class MegaplanTask
 
         try
         {
+            // ОТЛАДКА: посмотрим что в empData
+            Logger.debug("Employee data keys: " + empData.keySet());
+            Logger.debug("Employee data: " + empData);
+
             String id = (String) empData.get("id");
             String name = (String) empData.get("name");
             String position = (String) empData.get("position");
+
+            Logger.debug("Parsed employee - id: " + id + ", name: " + name + ", position: " + position);
 
             String email = findEmail((List) empData.get("contactInfo"));
 
@@ -386,4 +404,44 @@ public class MegaplanTask
         }
         Logger.info("MegaplanTask executor остановлен");
     }
+
+    public static Task getTaskById(String taskId)
+    {
+        if (StringUtil.isEmpty(taskId))
+        {
+            Logger.warn("Пустой ID задачи");
+            return null;
+        }
+
+        String baseUrl = EnvUtil.get("MEGAPLAN_URL", "https://prodvigaeff.megaplan.ru");
+
+        // Добавляем параметры для получения полной информации о задаче
+        String jsonParam = "{\"fields\":[\"id\",\"name\",\"status\",\"owner\",\"responsible\",\"subTasks\",\"timeCreated\",\"activity\"]}";
+        String endpoint = baseUrl + "/api/v3/task/" + taskId + "?" + StringUtil.urlEncode(jsonParam);
+
+        HttpResponse response = HttpBuilder
+                .get(endpoint)
+                .auth(MEGAPLAN_API_KEY)
+                .execute();
+
+        if (!response.isSuccess())
+        {
+            Logger.error("Ошибка получения задачи " + taskId + ": " + response.getStatusCode());
+            return null;
+        }
+
+        try
+        {
+            Map<String, Object> jsonResponse = JsonUtil.fromJson(response.getBody(), Map.class);
+            Map<String, Object> taskData = (Map) jsonResponse.get("data");
+
+            return taskData != null ? parseTask(taskData) : null;
+        }
+        catch (Exception e)
+        {
+            Logger.error("Ошибка парсинга данных задачи " + taskId + ": " + e.getMessage());
+            return null;
+        }
+    }
+
 }

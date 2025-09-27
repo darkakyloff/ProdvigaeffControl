@@ -12,6 +12,8 @@ public class Task
     private Employee responsible;
     private List<TaskComment> comments;
     private List<String> subtaskIds;
+    private LocalDateTime timeCreated;
+    private LocalDateTime activity;
 
     public Task(String id, String name, String status, Employee owner, Employee responsible)
     {
@@ -29,9 +31,13 @@ public class Task
     public Employee getResponsible() { return responsible; }
     public List<TaskComment> getComments() { return comments; }
     public List<String> getSubtaskIds() { return subtaskIds; }
+    public LocalDateTime getTimeCreated() { return timeCreated; }
+    public LocalDateTime getActivity() { return activity; }
 
     public void setComments(List<TaskComment> comments) { this.comments = comments; }
     public void setSubtaskIds(List<String> subtaskIds) { this.subtaskIds = subtaskIds; }
+    public void setTimeCreated(LocalDateTime timeCreated) { this.timeCreated = timeCreated; }
+    public void setActivity(LocalDateTime activity) { this.activity = activity; }
 
     public static class TaskComment
     {

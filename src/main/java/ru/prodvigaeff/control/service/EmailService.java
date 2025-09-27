@@ -9,6 +9,7 @@ import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,8 +21,9 @@ public class EmailService
     private static final int MAX_RETRY_ATTEMPTS = EnvUtil.getInt("EMAIL_MAX_RETRIES", 3);
     private static final int RETRY_DELAY_MS = EnvUtil.getInt("EMAIL_RETRY_DELAY_MS", 2000);
 
-    public static void sendEmail(String toEmail, String subject, String templatePath, Map<String, String> placeholders)
+    public static void sendEmail(String toEmail, String subject, String templateName, Map<String, String> placeholders)
     {
+        String templatePath = "templates/" + templateName;
         sendEmailWithRetry(toEmail, subject, templatePath, placeholders, MAX_RETRY_ATTEMPTS);
     }
 
@@ -65,8 +67,7 @@ public class EmailService
         throw new EmailException("Email не отправлен после " + maxAttempts + " попыток", lastException);
     }
 
-    private static void sendEmailAttempt(String toEmail, String subject, String templatePath,
-                                         Map<String, String> placeholders) throws EmailException
+    private static void sendEmailAttempt(String toEmail, String subject, String templatePath, Map<String, String> placeholders) throws EmailException
     {
         try
         {
@@ -101,8 +102,7 @@ public class EmailService
         }
     }
 
-    private static ValidationResult validateEmailParameters(String toEmail, String subject,
-                                                            String templatePath, Map<String, String> placeholders)
+    private static ValidationResult validateEmailParameters(String toEmail, String subject, String templatePath, Map<String, String> placeholders)
     {
         ValidationResult result = new ValidationResult();
 
@@ -130,11 +130,17 @@ public class EmailService
             return result;
         }
 
-        Path template = Paths.get(templatePath);
-        if (!Files.exists(template))
+        // Проверяем существование шаблона через ClassLoader вместо файловой системы
+        String resourcePath = templatePath.replace("src/main/resources/", "");
+        InputStream testStream = EmailService.class.getClassLoader().getResourceAsStream(resourcePath);
+        if (testStream == null)
         {
             result.setError("Шаблон не найден: " + templatePath);
             return result;
+        }
+        else
+        {
+            try { testStream.close(); } catch (Exception ignored) {}
         }
 
         if (placeholders == null)
@@ -149,8 +155,13 @@ public class EmailService
 
     private static String loadTemplate(String templatePath) throws IOException
     {
-        Path template = Paths.get(templatePath);
-        return Files.readString(template);
+        String resourcePath = templatePath.replace("src/main/resources/", "");
+
+        InputStream inputStream = EmailService.class.getClassLoader().getResourceAsStream(resourcePath);
+
+        if (inputStream == null) throw new IOException("Шаблон не найден в ресурсах: " + resourcePath);
+
+        try (inputStream) { return new String(inputStream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8); }
     }
 
     private static String replacePlaceholders(String content, Map<String, String> placeholders)
@@ -163,7 +174,10 @@ public class EmailService
             String key = entry.getKey();
             String value = entry.getValue() != null ? entry.getValue() : "";
 
-            String escapedValue = escapeHtml(value);
+            String escapedValue;
+            if ("VIOLATIONS_LIST".equals(key) && content.contains("Нарушения дат создания задач")) escapedValue = value;
+            else escapedValue = escapeHtml(value);
+
             result = result.replace("{" + key + "}", escapedValue);
         }
 
@@ -186,8 +200,7 @@ public class EmailService
                 .replace("'", "&#39;");
     }
 
-    private static MimeMessage createMessage(Session session, String toEmail, String subject,
-                                             String htmlContent) throws MessagingException
+    private static MimeMessage createMessage(Session session, String toEmail, String subject, String htmlContent) throws MessagingException
     {
         MimeMessage message = new MimeMessage(session);
 

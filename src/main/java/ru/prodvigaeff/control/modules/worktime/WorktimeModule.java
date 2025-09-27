@@ -17,7 +17,7 @@ public class WorktimeModule extends AbstractModule
     @Override
     public String getCronExpression()
     {
-        return "0 00 10 * * *";
+        return "0 55 9 * * *";
     }
 
     @Override

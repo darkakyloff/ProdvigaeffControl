@@ -16,8 +16,6 @@ import java.util.Set;
 
 public class WorkTimeExecutor
 {
-    private static final String TEMPLATE_PATH = "src/main/resources/templates/WorkData.html";
-
     public static HashMap<Task, Task.TaskComment> getViolation()
     {
         LocalDateTime now = LocalDateTime.now();
@@ -196,7 +194,7 @@ public class WorkTimeExecutor
 
         try
         {
-            EmailService.sendEmail(employeeEmail, subject, TEMPLATE_PATH, placeholders);
+            EmailService.sendEmail(employeeEmail, subject, "WorkData.html", placeholders);
             Logger.success("Отправлено уведомление сотруднику " + employeeName + " (" + StringUtil.maskEmail(employeeEmail) + ")");
             return true;
         }
