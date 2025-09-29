@@ -26,8 +26,7 @@ public class TaskHierarchyAuditModule extends AbstractModule
     @Override
     public String getCronExpression()
     {
-        return null;
-//        return "0 55 11 * * *";
+        return "0 55 11 * * *";
     }
 
     @Override
