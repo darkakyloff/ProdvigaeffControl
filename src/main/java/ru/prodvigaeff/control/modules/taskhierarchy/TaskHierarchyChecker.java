@@ -22,7 +22,7 @@ public class TaskHierarchyChecker
 
         LocalDateTime cutoffDate = now.minusHours(24);
         List<Task> recentTasks = allTasks.stream()
-                .filter(task -> task.getTimeCreated() != null && task.getTimeCreated().isAfter(cutoffDate))
+                .filter(task -> task.getActivity() != null && task.getActivity().isAfter(cutoffDate))
                 .filter(task -> task.getSubtaskIds() != null && !task.getSubtaskIds().isEmpty())
                 .collect(Collectors.toList());
 
