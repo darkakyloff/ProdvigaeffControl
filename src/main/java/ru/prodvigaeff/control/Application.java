@@ -4,6 +4,7 @@ import ru.prodvigaeff.control.core.module.ModuleRegistry;
 import ru.prodvigaeff.control.core.scheduler.Timer;
 import ru.prodvigaeff.control.megaplan.managers.MegaplanTask;
 import ru.prodvigaeff.control.modules.cache.CacheCleanupModule;
+import ru.prodvigaeff.control.modules.commentquality.CommentQualityAuditModule;
 import ru.prodvigaeff.control.modules.taskhierarchy.TaskHierarchyAuditModule;
 import ru.prodvigaeff.control.modules.worktime.WorkTimeAuditModule;
 import ru.prodvigaeff.control.service.EmailSender;
@@ -111,6 +112,7 @@ public class Application
 
             ModuleRegistry.register(new WorkTimeAuditModule(emailSender));
             ModuleRegistry.register(new TaskHierarchyAuditModule(emailSender));
+            ModuleRegistry.register(new CommentQualityAuditModule(emailSender));
 
             ModuleRegistry.register(new CacheCleanupModule());
 

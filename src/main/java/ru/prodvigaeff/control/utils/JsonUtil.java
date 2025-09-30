@@ -2,6 +2,7 @@ package ru.prodvigaeff.control.utils;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.core.JsonGenerator;
 
 public class JsonUtil
 {
@@ -10,6 +11,7 @@ public class JsonUtil
     static
     {
         mapper.registerModule(new JavaTimeModule());
+        mapper.configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, false);
     }
 
     public static String toJson(Object obj)
@@ -22,7 +24,15 @@ public class JsonUtil
 
         try
         {
-            return mapper.writeValueAsString(obj);
+            String json = mapper.writeValueAsString(obj);
+
+            boolean hasCyrillic = json.chars().anyMatch(c -> c >= 0x0400 && c <= 0x04FF);
+            if (hasCyrillic)
+            {
+                Logger.debug("JsonUtil: JSON содержит кириллицу ✓");
+            }
+
+            return json;
         }
         catch (Exception e)
         {

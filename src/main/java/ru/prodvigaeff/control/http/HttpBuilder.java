@@ -48,4 +48,9 @@ public class HttpBuilder
     {
         return HttpUtil.execute(request);
     }
+
+    public HttpResponse executeWithRetry(int maxRetries)
+    {
+        return HttpUtil.executeWithRetry(request, maxRetries);
+    }
 }

@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Уведомление о низком качестве описания работы</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .email-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 300;
+        }
+
+        .header .date {
+            margin-top: 10px;
+            font-size: 16px;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .greeting {
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: #2c3e50;
+        }
+
+        .violation-card {
+            background-color: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-left: 4px solid #e53e3e;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .violation-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .task-name {
+            font-weight: bold;
+            color: #2d3748;
+            font-size: 16px;
+        }
+
+        .violation-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .detail-item {
+            background-color: white;
+            padding: 12px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #718096;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .comment-content {
+            background-color: white;
+            padding: 15px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+            font-style: italic;
+            color: #4a5568;
+            margin: 15px 0;
+        }
+
+        .ai-scores {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .ai-scores-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .score-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .score-item {
+            background-color: white;
+            padding: 10px;
+            border-radius: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .score-label {
+            font-size: 14px;
+            color: #4a5568;
+        }
+
+        .score-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e53e3e;
+        }
+
+        .total-score {
+            background-color: #e53e3e;
+            color: white;
+            padding: 12px;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .ai-reason {
+            background-color: #fee;
+            border: 1px solid #fdd;
+            border-left: 4px solid #e53e3e;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #721c24;
+        }
+
+        .ai-reason-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .tips-section {
+            background-color: #f0fff4;
+            border: 1px solid #9ae6b4;
+            border-left: 4px solid #38a169;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 25px;
+        }
+
+        .tips-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #22543d;
+            margin-bottom: 15px;
+        }
+
+        .tips-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .tips-list li {
+            padding: 8px 0;
+            color: #2f855a;
+        }
+
+        .tips-list li:before {
+            content: "";
+            color: #38a169;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .example-section {
+            background-color: #ebf8ff;
+            border: 1px solid #bee3f8;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .example-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #2c5282;
+            margin-bottom: 10px;
+        }
+
+        .example-text {
+            background-color: white;
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid #3182ce;
+            font-size: 14px;
+            color: #2d3748;
+        }
+
+        .footer {
+            background-color: #f7fafc;
+            padding: 25px 30px;
+            text-align: center;
+            color: #718096;
+            font-size: 14px;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .logo {
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: #667eea;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            .violation-details, .score-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .violation-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <div class="header">
+        <div class="logo">ПродвигаеФФ.ру</div>
+        <h1>Качество описания работы</h1>
+        <div class="date">Отчет от {CHECK_DATE}</div>
+    </div>
+
+    <div class="content">
+        <div class="greeting">
+            Здравствуйте, <strong>{EMPLOYEE_NAME}</strong>!
+        </div>
+
+        <p>Обнаружено недостаточно подробное описание работы в комментарии к задаче. Система искусственного интеллекта оценила качество вашего комментария и выявила несоответствие между объемом работы и детализацией описания.</p>
+
+        <div class="violation-card">
+            <div class="violation-header">
+                <div class="task-name">{TASK_NAME}</div>
+            </div>
+
+            <div class="violation-details">
+                <div class="detail-item">
+                    <div class="detail-label">ID задачи</div>
+                    <div class="detail-value">{TASK_ID}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Дата комментария</div>
+                    <div class="detail-value">{COMMENT_DATE}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Списано часов</div>
+                    <div class="detail-value">{WORK_HOURS} ч</div>
+                </div>
+            </div>
+
+            <div class="detail-label" style="margin-bottom: 8px;">ВАШ КОММЕНТАРИЙ:</div>
+            <div class="comment-content">
+                "{COMMENT_TEXT}"
+            </div>
+        </div>
+
+        <div class="ai-scores">
+            <div class="ai-scores-title">Оценка искусственного интеллекта</div>
+
+            <div class="score-grid">
+                <div class="score-item">
+                    <span class="score-label">Реалистичность</span>
+                    <span class="score-value">{REALISM_SCORE}/10</span>
+                </div>
+                <div class="score-item">
+                    <span class="score-label">Конкретика</span>
+                    <span class="score-value">{CONCRETE_SCORE}/10</span>
+                </div>
+            </div>
+
+            <div class="total-score">
+                Общая оценка: {TOTAL_SCORE}/10
+            </div>
+        </div>
+
+        <div class="ai-reason">
+            <div class="ai-reason-title">Причина низкой оценки:</div>
+            {AI_REASON}
+        </div>
+
+        <div class="tips-section">
+            <div class="tips-title">Как улучшить описание работы</div>
+            <ul class="tips-list">
+                <li>Указывайте конкретные задачи, которые решали</li>
+                <li>Упоминайте технологии, инструменты, названия файлов или систем</li>
+                <li>Описывайте результаты и достигнутые цели</li>
+                <li>Если работа заняла много времени — объясните причины</li>
+                <li>Добавляйте детали, которые помогут понять масштаб работы</li>
+            </ul>
+        </div>
+
+        <div class="example-section">
+            <div class="example-title">Пример качественного комментария:</div>
+            <div class="example-text">
+                Исправил 3 критичных бага: 1) ошибка 500 при загрузке файлов >10MB - увеличил лимит в nginx.conf с 2MB до 20MB, 2) утечка памяти в UserService - добавил автоматическое закрытие connection pool после каждого запроса, 3) падение фронта на iOS Safari - пофиксил баг с форматированием дат в библиотеке moment.js. Все багфиксы протестированы на staging окружении, развернуты на production. Дополнительно написал unit-тесты для предотвращения регрессии.
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 25px;">
+            <a href="{TASK_URL}" class="cta-button">
+                Перейти к задаче
+            </a>
+        </div>
+    </div>
+
+    <div class="footer">
+        <p><strong>С уважением,<br>Автоматическая система контроля качества</strong></p>
+        <p>Это автоматическое сообщение. При возникновении вопросов обращайтесь к руководителю.</p>
+    </div>
+</div>
+</body>
+</html>

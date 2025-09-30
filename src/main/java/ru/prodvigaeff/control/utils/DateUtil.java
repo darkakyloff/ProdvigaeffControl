@@ -10,14 +10,20 @@ public class DateUtil
 {
     public static final ZoneId MSK_ZONE = ZoneId.of("Europe/Moscow");
     public static final DateTimeFormatter ISO_FORMATTER = DateTimeFormatter.ISO_INSTANT;
-    
+
     public static LocalDateTime parseIsoToMsk(String isoString)
     {
         try
         {
             String cleanIso = isoString.replace("Z", "+00:00");
-            ZonedDateTime utc = ZonedDateTime.parse(cleanIso);
-            return utc.withZoneSameInstant(MSK_ZONE).toLocalDateTime();
+
+            ZonedDateTime zonedDateTime = ZonedDateTime.parse(cleanIso);
+
+            ZoneId sourceZone = zonedDateTime.getZone();
+
+            if (sourceZone.equals(MSK_ZONE)) return zonedDateTime.toLocalDateTime();
+
+            return zonedDateTime.withZoneSameInstant(MSK_ZONE).toLocalDateTime();
         }
         catch (Exception e)
         {
@@ -25,7 +31,7 @@ public class DateUtil
             return null;
         }
     }
-    
+
     public static LocalDate today()
     {
         return LocalDate.now(MSK_ZONE);

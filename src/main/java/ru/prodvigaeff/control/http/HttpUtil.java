@@ -12,6 +12,7 @@ import ru.prodvigaeff.control.utils.Logger;
 
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
+import java.nio.charset.StandardCharsets;
 
 public class HttpUtil
 {
@@ -39,12 +40,13 @@ public class HttpUtil
 
                 if (request.getBody() != null && httpRequest instanceof HttpPost)
                 {
-                    ((HttpPost) httpRequest).setEntity(new StringEntity(request.getBody()));
+                    StringEntity entity = new StringEntity(request.getBody(), StandardCharsets.UTF_8);
+                    ((HttpPost) httpRequest).setEntity(entity);
                 }
 
                 HttpResponse response = client.execute(httpRequest, httpResponse -> {
                     int statusCode = httpResponse.getCode();
-                    String body = EntityUtils.toString(httpResponse.getEntity());
+                    String body = EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8);
                     return new HttpResponse(statusCode, body);
                 });
 
@@ -104,7 +106,6 @@ public class HttpUtil
     {
         try
         {
-            // Экспоненциальная задержка: 1s, 2s, 4s...
             int delay = DEFAULT_RETRY_DELAY_MS * (int) Math.pow(2, attempt - 1);
             Thread.sleep(delay);
         }

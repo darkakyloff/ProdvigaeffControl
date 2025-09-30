@@ -30,17 +30,18 @@ public class StringUtil
         if (content == null) return "не найдено";
 
         return content
-                .replaceAll("<[^>]*>", "") // Удаляем HTML теги
-                .replaceAll("&nbsp;", " ") // Заменяем неразрывные пробелы
-                .replaceAll("&amp;", "&")  // Декодируем HTML entities
+                .replaceAll("<br\\s*/?>", "\n")  // <br> → перенос строки
+                .replaceAll("</p>\\s*<p>", "\n")  // </p><p> → перенос строки
+                .replaceAll("<[^>]*>", "")        // Удаляем HTML теги
+                .replaceAll("&nbsp;", " ")        // Заменяем неразрывные пробелы
+                .replaceAll("&amp;", "&")         // Декодируем HTML entities
                 .replaceAll("&lt;", "<")
                 .replaceAll("&gt;", ">")
                 .replaceAll("&quot;", "\"")
                 .replaceAll("&#39;", "'")
-                .replaceAll("\\s+", " ")   // Схлопываем множественные пробелы
+                .replaceAll("\\s+", " ")          // Схлопываем множественные пробелы
                 .trim();
     }
-
     public static boolean isEmpty(String str)
     {
         return str == null || str.trim().isEmpty();
