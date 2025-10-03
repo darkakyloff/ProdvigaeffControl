@@ -23,13 +23,13 @@ extends AbstractModule
     @Override
     public String getName()
     {
-        return "TaskTime";
+        return "TaskTimeAuditor";
     }
 
     @Override
     public String getCronExpression()
     {
-        return null;
+        return "0 55 10 * * *";
     }
 
     @Override

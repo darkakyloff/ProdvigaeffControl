@@ -20,7 +20,7 @@ public class TaskHierarchyAuditModule extends AbstractModule
     @Override
     public String getName()
     {
-        return "TaskHierarchyValidator";
+        return "TaskHierarchyAuditor";
     }
 
     @Override
