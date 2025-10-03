@@ -29,9 +29,9 @@ public class CommentQualityChecker
         LocalDateTime now = LocalDateTime.now(DateUtil.MSK_ZONE);
         LocalDateTime cutoffDate = now.minusHours(24);
 
-        Logger.info("Начинаем проверку качества комментариев");
-        Logger.info("Проверяем комментарии с >= " + MIN_HOURS_TO_CHECK + " часов за последние 7 дней");
-        Logger.info("Период с " + cutoffDate + " по " + now + " (MSK)");
+        Logger.debug("Начинаем проверку качества комментариев");
+        Logger.debug("Проверяем комментарии с >= " + MIN_HOURS_TO_CHECK + " часов за последние 7 дней");
+        Logger.debug("Период с " + cutoffDate + " по " + now + " (MSK)");
 
         int checkedComments = 0;
         int totalTasks = tasks.size();
@@ -112,7 +112,7 @@ public class CommentQualityChecker
                                 ", автор: " + authorName +
                                 ", оценка: " + result.getTotalScore());
                     }
-                    else Logger.success("Комментарий прошел проверку (автор: " + authorName + ")");
+                    else Logger.debug("Комментарий прошел проверку (автор: " + authorName + ")");
 
                 }
                 catch (Exception e)

@@ -6,6 +6,7 @@ import ru.prodvigaeff.control.megaplan.managers.MegaplanTask;
 import ru.prodvigaeff.control.modules.cache.CacheCleanupModule;
 import ru.prodvigaeff.control.modules.commentquality.CommentQualityAuditModule;
 import ru.prodvigaeff.control.modules.taskhierarchy.TaskHierarchyAuditModule;
+import ru.prodvigaeff.control.modules.tasktime.TaskTimeAuditModule;
 import ru.prodvigaeff.control.modules.worktime.WorkTimeAuditModule;
 import ru.prodvigaeff.control.service.EmailSender;
 import ru.prodvigaeff.control.service.SimpleEmailSender;
@@ -49,7 +50,6 @@ public class Application
             Timer.start();
 
             Logger.success("Все модули зарегистрированы и планировщик запущен");
-            Logger.info("Готов к работе");
         }
         catch (ConfigurationException e)
         {
@@ -113,6 +113,7 @@ public class Application
             ModuleRegistry.register(new WorkTimeAuditModule(emailSender));
             ModuleRegistry.register(new TaskHierarchyAuditModule(emailSender));
             ModuleRegistry.register(new CommentQualityAuditModule(emailSender));
+            ModuleRegistry.register(new TaskTimeAuditModule(emailSender));
 
             ModuleRegistry.register(new CacheCleanupModule());
 

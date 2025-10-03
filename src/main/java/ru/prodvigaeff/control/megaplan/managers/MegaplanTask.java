@@ -67,10 +67,10 @@ public class MegaplanTask
             loadCommentsForTasks(pageTasks);
             allTasks.addAll(pageTasks);
 
-            Logger.info("Страница " + pageCount + ": получено " + tasksData.size() + " задач, всего: " + allTasks.size());
+            Logger.debug("Страница " + pageCount + ": получено " + tasksData.size() + " задач, всего: " + allTasks.size());
         }
 
-        Logger.success("Всего получено задач: " + allTasks.size() + " за " + pageCount + " страниц");
+        Logger.debug("Всего получено задач: " + allTasks.size() + " за " + pageCount + " страниц");
         return allTasks;
     }
 
@@ -78,7 +78,7 @@ public class MegaplanTask
     {
         if (tasks.isEmpty()) return;
 
-        Logger.info("Загружаем комментарии для " + tasks.size() + " задач...");
+        Logger.debug("Загружаем комментарии для " + tasks.size() + " задач...");
 
         List<List<Task>> batches = createBatches(tasks, BATCH_SIZE);
 
@@ -88,7 +88,7 @@ public class MegaplanTask
 
         CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).join();
 
-        Logger.success("Комментарии загружены для всех задач");
+        Logger.debug("Комментарии загружены для всех задач");
     }
 
     private static void processBatch(List<Task> batch)
@@ -128,8 +128,10 @@ public class MegaplanTask
 
         String jsonParam;
 
-        if (pageAfter != null) jsonParam = "{\"limit\":100,\"pageAfter\":{\"contentType\":\"Task\",\"id\":\"" + pageAfter + "\"},\"fields\":[\"id\",\"name\",\"status\",\"owner\",\"responsible\",\"subTasks\",\"timeCreated\",\"activity\"]}";
-        else jsonParam = "{\"limit\":100,\"fields\":[\"id\",\"name\",\"status\",\"owner\",\"responsible\",\"subTasks\",\"timeCreated\",\"activity\"]}";
+        if (pageAfter != null)
+            jsonParam = "{\"limit\":100,\"pageAfter\":{\"contentType\":\"Task\",\"id\":\"" + pageAfter + "\"},\"fields\":[\"id\",\"name\",\"status\",\"owner\",\"responsible\",\"subTasks\",\"timeCreated\",\"activity\",\"plannedWork\",\"actualWork\"]}";
+        else
+            jsonParam = "{\"limit\":100,\"fields\":[\"id\",\"name\",\"status\",\"owner\",\"responsible\",\"subTasks\",\"timeCreated\",\"activity\",\"plannedWork\",\"actualWork\"]}";
 
         return endpoint + StringUtil.urlEncode(jsonParam);
     }
@@ -193,14 +195,34 @@ public class MegaplanTask
                 return null;
             }
 
+            // Получаем базовую информацию
             Task.Employee owner = parseEmployee((Map) taskData.get("owner"));
             Task.Employee responsible = parseEmployee((Map) taskData.get("responsible"));
+
+            // Дозагружаем полную информацию с департаментом
+            if (owner != null && owner.getId() != null)
+            {
+                Task.Employee fullOwner = getEmployeeById(owner.getId());
+                if (fullOwner != null) owner = fullOwner;
+            }
+
+            if (responsible != null && responsible.getId() != null)
+            {
+                Task.Employee fullResponsible = getEmployeeById(responsible.getId());
+                if (fullResponsible != null) responsible = fullResponsible;
+            }
+
             LocalDateTime timeCreated = parseDateTime((Map) taskData.get("timeCreated"));
             LocalDateTime activity = parseDateTime((Map) taskData.get("activity"));
 
             Task task = new Task(id, name, status, owner, responsible);
             task.setTimeCreated(timeCreated);
             task.setActivity(activity);
+
+            double plannedHours = parseWorkHours((Map) taskData.get("plannedWork"));
+            double actualHours = parseWorkHours((Map) taskData.get("actualWork"));
+            task.setPlannedWorkHours(plannedHours);
+            task.setActualWorkHours(actualHours);
 
             if (taskData.containsKey("subTasks")) {
                 List<Map<String, Object>> subTasks = (List<Map<String, Object>>) taskData.get("subTasks");
@@ -258,14 +280,28 @@ public class MegaplanTask
 
         try
         {
-
             String id = (String) empData.get("id");
             String name = (String) empData.get("name");
             String position = (String) empData.get("position");
 
             String email = findEmail((List) empData.get("contactInfo"));
 
-            return new Task.Employee(id, name, email, position);
+            Task.Department department = null;
+            if (empData.containsKey("department"))
+            {
+                Map<String, Object> deptData = (Map) empData.get("department");
+                if (deptData != null)
+                {
+                    String deptId = (String) deptData.get("id");
+                    String deptName = (String) deptData.get("name");
+                    if (deptId != null && deptName != null)
+                    {
+                        department = new Task.Department(deptId, deptName);
+                    }
+                }
+            }
+
+            return new Task.Employee(id, name, email, position, department);
         }
         catch (Exception e)
         {
@@ -301,8 +337,10 @@ public class MegaplanTask
             Object value = workTimeData.get("value");
             if (value == null) return 0.0;
 
+            // Значение приходит в секундах, конвертируем в часы
             if (value instanceof Integer) return ((Integer) value) / 3600.0;
             if (value instanceof Double) return ((Double) value) / 3600.0;
+            if (value instanceof Long) return ((Long) value) / 3600.0;
 
             return 0.0;
         }
@@ -379,7 +417,7 @@ public class MegaplanTask
     public static void clearEmployeeCache()
     {
         employeeCache.clear();
-        Logger.info("Кеш сотрудников очищен");
+        Logger.debug("Кеш сотрудников очищен");
     }
 
     public static void shutdown()
@@ -410,7 +448,7 @@ public class MegaplanTask
 
         String baseUrl = EnvUtil.get("MEGAPLAN_URL", "https://prodvigaeff.megaplan.ru");
 
-        String jsonParam = "{\"fields\":[\"id\",\"name\",\"status\",\"owner\",\"responsible\",\"subTasks\",\"timeCreated\",\"activity\"]}";
+        String jsonParam = "{\"fields\":[\"id\",\"name\",\"status\",\"owner\",\"responsible\",\"subTasks\",\"timeCreated\",\"activity\",\"plannedWork\",\"actualWork\"]}";
         String endpoint = baseUrl + "/api/v3/task/" + taskId + "?" + StringUtil.urlEncode(jsonParam);
 
         HttpResponse response = HttpBuilder

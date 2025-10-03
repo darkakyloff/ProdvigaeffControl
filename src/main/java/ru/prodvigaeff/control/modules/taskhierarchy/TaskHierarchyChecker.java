@@ -26,8 +26,8 @@ public class TaskHierarchyChecker
                 .filter(task -> task.getSubtaskIds() != null && !task.getSubtaskIds().isEmpty())
                 .collect(Collectors.toList());
 
-        Logger.info("Начинаем проверку дат создания задач и подзадач");
-        Logger.info("Всего задач: " + allTasks.size() + ", активных с подзадачами: " + recentTasks.size());
+        Logger.debug("Начинаем проверку дат создания задач и подзадач");
+        Logger.debug("Всего задач: " + allTasks.size() + ", активных с подзадачами: " + recentTasks.size());
 
         for (Task parentTask : recentTasks)
         {
@@ -48,7 +48,7 @@ public class TaskHierarchyChecker
             }
         }
 
-        Logger.info("Проверка завершена. Найдено нарушений: " + violations.size());
+        Logger.debug("Проверка завершена. Найдено нарушений: " + violations.size());
         return violations;
     }
 }

@@ -21,7 +21,7 @@ public class CacheCleanupModule extends AbstractModule
     @Override
     public void executeModule()
     {
-        Logger.info("Начинаем очистку устаревших записей в кеше");
+        Logger.debug("Начинаем очистку устаревших записей в кеше");
         
         long startTime = System.currentTimeMillis();
         

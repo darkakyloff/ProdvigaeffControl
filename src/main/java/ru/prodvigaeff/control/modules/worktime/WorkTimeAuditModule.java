@@ -33,20 +33,20 @@ public class WorkTimeAuditModule extends AbstractModule
     @Override
     public void executeModule()
     {
-        Logger.info("Начинаем аудит рабочего времени");
+        Logger.debug("Начинаем аудит рабочего времени");
 
         long startTime = System.currentTimeMillis();
         List<WorkTimeViolation> violations = checker.checkViolations(LocalDateTime.now());
 
         if (violations.isEmpty())
         {
-            Logger.info("Нарушений не найдено");
+            Logger.debug("Нарушений не найдено");
         }
         else
         {
-            Logger.info("Найдено нарушений: " + violations.size());
+            Logger.debug("Найдено нарушений: " + violations.size());
             notifier.sendNotifications(violations);
-            Logger.success("Все уведомления отправлены");
+            Logger.debug("Все уведомления отправлены");
         }
 
         long endTime = System.currentTimeMillis();

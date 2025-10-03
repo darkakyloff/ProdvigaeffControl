@@ -22,8 +22,8 @@ public class WorkTimeChecker
         LocalDateTime checkStart = currentMsk.minusHours(24).toLocalDateTime();
         LocalDateTime checkEnd = currentMsk.toLocalDateTime();
 
-        Logger.info("Начинаем проверку нарушений рабочего времени");
-        Logger.info("Проверяем период с " + checkStart + " по " + checkEnd);
+        Logger.debug("Начинаем проверку нарушений рабочего времени");
+        Logger.debug("Проверяем период с " + checkStart + " по " + checkEnd);
 
         int processedTasks = 0;
         int totalTasks = tasks.size();
@@ -48,7 +48,7 @@ public class WorkTimeChecker
             }
         }
 
-        Logger.info("Проверка завершена. Найдено нарушений: " + violations.size());
+        Logger.debug("Проверка завершена. Найдено нарушений: " + violations.size());
         return violations;
     }
 

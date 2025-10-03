@@ -28,11 +28,11 @@ public class CommentQualityNotifier
     {
         if (violations.isEmpty())
         {
-            Logger.info("Нет нарушений для отправки уведомлений");
+            Logger.debug("Нет нарушений для отправки уведомлений");
             return;
         }
 
-        Logger.info("Начинаем отправку " + violations.size() + " уведомлений");
+        Logger.debug("Начинаем отправку " + violations.size() + " уведомлений");
 
         int successCount = 0;
         int errorCount = 0;
@@ -51,7 +51,7 @@ public class CommentQualityNotifier
             }
         }
 
-        Logger.info("Отправлено успешно: " + successCount + ", ошибок: " + errorCount);
+        Logger.debug("Отправлено успешно: " + successCount + ", ошибок: " + errorCount);
     }
 
     private void sendSingleNotification(CommentQualityViolation violation)
@@ -68,7 +68,7 @@ public class CommentQualityNotifier
         String subject = "Низкое качество описания работы - " + fullEmployee.getName();
 
         emailSender.sendEmail(fullEmployee.getEmail(), subject, "CommentQualityEmail.html", data);
-        Logger.success("Email уведомление отправлено: " + fullEmployee.getEmail());
+        Logger.debug("Email уведомление отправлено: " + fullEmployee.getEmail());
     }
 
     private Map<String, String> createEmailData(CommentQualityViolation violation, Task.Employee employee)

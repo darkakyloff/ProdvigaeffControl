@@ -32,20 +32,20 @@ public class CommentQualityAuditModule extends AbstractModule
     @Override
     public void executeModule()
     {
-        Logger.info("Начинаем аудит качества комментариев");
+        Logger.debug("Начинаем аудит качества комментариев");
 
         long startTime = System.currentTimeMillis();
         List<CommentQualityViolation> violations = checker.checkViolations();
 
         if (violations.isEmpty())
         {
-            Logger.info("Нарушений качества комментариев не найдено");
+            Logger.debug("Нарушений качества комментариев не найдено");
         }
         else
         {
             Logger.warn("Найдено нарушений качества комментариев: " + violations.size());
             notifier.sendNotifications(violations);
-            Logger.success("Все уведомления о нарушениях отправлены");
+            Logger.debug("Все уведомления о нарушениях отправлены");
         }
 
         long endTime = System.currentTimeMillis();

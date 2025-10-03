@@ -14,6 +14,8 @@ public class Task
     private List<String> subtaskIds;
     private LocalDateTime timeCreated;
     private LocalDateTime activity;
+    private double plannedWorkHours;
+    private double actualWorkHours;
 
     public Task(String id, String name, String status, Employee owner, Employee responsible)
     {
@@ -33,11 +35,15 @@ public class Task
     public List<String> getSubtaskIds() { return subtaskIds; }
     public LocalDateTime getTimeCreated() { return timeCreated; }
     public LocalDateTime getActivity() { return activity; }
+    public double getPlannedWorkHours() { return plannedWorkHours; }
+    public double getActualWorkHours() { return actualWorkHours; }
 
     public void setComments(List<TaskComment> comments) { this.comments = comments; }
     public void setSubtaskIds(List<String> subtaskIds) { this.subtaskIds = subtaskIds; }
     public void setTimeCreated(LocalDateTime timeCreated) { this.timeCreated = timeCreated; }
     public void setActivity(LocalDateTime activity) { this.activity = activity; }
+    public void setPlannedWorkHours(double plannedWorkHours) { this.plannedWorkHours = plannedWorkHours; }
+    public void setActualWorkHours(double actualWorkHours) { this.actualWorkHours = actualWorkHours; }
 
     public static class TaskComment
     {
@@ -82,6 +88,7 @@ public class Task
         private String name;
         private String email;
         private String position;
+        private Department department;
 
         public Employee(String id, String name, String email, String position)
         {
@@ -91,9 +98,36 @@ public class Task
             this.position = position;
         }
 
+        public Employee(String id, String name, String email, String position, Department department)
+        {
+            this.id = id;
+            this.name = name;
+            this.email = email;
+            this.position = position;
+            this.department = department;
+        }
+
         public String getId() { return id; }
         public String getName() { return name; }
         public String getEmail() { return email; }
         public String getPosition() { return position; }
+        public Department getDepartment() { return department; }
+
+        public void setDepartment(Department department) { this.department = department; }
+    }
+
+    public static class Department
+    {
+        private String id;
+        private String name;
+
+        public Department(String id, String name)
+        {
+            this.id = id;
+            this.name = name;
+        }
+
+        public String getId() { return id; }
+        public String getName() { return name; }
     }
 }

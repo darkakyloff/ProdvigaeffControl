@@ -43,7 +43,7 @@ public class TaskHierarchyNotifier
         try
         {
             emailSender.sendEmail(primaryAdmin, subject, "TaskViolationEmail.html", data);
-            Logger.success("Email уведомление о нарушениях дат отправлено");
+            Logger.debug("Email уведомление о нарушениях дат отправлено");
         }
         catch (Exception e)
         {

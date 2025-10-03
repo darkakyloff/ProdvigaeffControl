@@ -11,12 +11,12 @@ public abstract class AbstractModule
     
     public final void execute()
     {
-        Logger.info("Запуск модуля: " + getName());
+        Logger.debug("Запуск модуля: " + getName());
         
         try
         {
             executeModule();
-            Logger.info("Модуль завершен: " + getName());
+            Logger.debug("Модуль завершен: " + getName());
         }
         catch (Exception e)
         {

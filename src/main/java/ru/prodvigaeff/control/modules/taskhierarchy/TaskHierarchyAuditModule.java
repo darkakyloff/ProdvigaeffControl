@@ -32,20 +32,18 @@ public class TaskHierarchyAuditModule extends AbstractModule
     @Override
     public void executeModule()
     {
-        Logger.info("Начинаем проверку дат создания задач и подзадач");
+        Logger.debug("Начинаем проверку дат создания задач и подзадач");
 
         long startTime = System.currentTimeMillis();
         List<TaskHierarchyViolation> violations = checker.checkViolations();
 
-        if (violations.isEmpty())
-        {
-            Logger.info("Нарушений дат создания не найдено");
-        }
+        if (violations.isEmpty()) Logger.debug("Нарушений дат создания не найдено");
+
         else
         {
-            Logger.warn("Найдено нарушений дат создания: " + violations.size());
+            Logger.debug("Найдено нарушений дат создания: " + violations.size());
             notifier.sendNotifications(violations);
-            Logger.success("Все уведомления о нарушениях отправлены");
+            Logger.debug("Все уведомления о нарушениях отправлены");
         }
 
         long endTime = System.currentTimeMillis();

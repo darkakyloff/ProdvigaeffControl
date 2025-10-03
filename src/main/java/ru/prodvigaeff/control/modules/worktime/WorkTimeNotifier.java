@@ -25,11 +25,11 @@ public class WorkTimeNotifier
     {
         if (violations.isEmpty())
         {
-            Logger.info("Нет нарушений для отправки уведомлений");
+            Logger.debug("Нет нарушений для отправки уведомлений");
             return;
         }
 
-        Logger.info("Начинаем отправку " + violations.size() + " уведомлений");
+        Logger.debug("Начинаем отправку " + violations.size() + " уведомлений");
 
         int successCount = 0;
         int errorCount = 0;
@@ -48,7 +48,7 @@ public class WorkTimeNotifier
             }
         }
 
-        Logger.info("Отправлено успешно: " + successCount + ", ошибок: " + errorCount);
+        Logger.debug("Отправлено успешно: " + successCount + ", ошибок: " + errorCount);
     }
 
     private void sendSingleNotification(WorkTimeViolation violation)
@@ -79,9 +79,7 @@ public class WorkTimeNotifier
         data.put("work_data", violation.getComment().getWorkDate().toLocalDate().toString());
         data.put("hourse", String.format("%.1f", violation.getComment().getWorkHours()));
         data.put("comment_id", violation.getComment().getId());
-        data.put("comment_context", StringUtil.isNotEmpty(violation.getComment().getContent())
-            ? StringUtil.truncate(violation.getComment().getContent(), 200)
-            : "Содержимое отсутствует");
+        data.put("comment_context", StringUtil.isNotEmpty(violation.getComment().getContent()) ? StringUtil.truncate(violation.getComment().getContent(), 200) : "Содержимое отсутствует");
 
         String baseUrl = EnvUtil.get("MEGAPLAN_URL", "https://prodvigaeff.megaplan.ru");
         data.put("task_url", baseUrl + "/task/" + violation.getTask().getId() + "/card/");
