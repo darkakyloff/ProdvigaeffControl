@@ -17,7 +17,7 @@ public class TaskHierarchyChecker
     public List<TaskHierarchyViolation> checkViolations()
     {
         LocalDateTime now = LocalDateTime.now();
-        Set<Task> allTasks = MegaplanTask.getAllTasks();
+        Set<Task> allTasks = MegaplanTask.getRecentTasksWithSubtasks();
         List<TaskHierarchyViolation> violations = new ArrayList<>();
 
         LocalDateTime cutoffDate = now.minusHours(24);

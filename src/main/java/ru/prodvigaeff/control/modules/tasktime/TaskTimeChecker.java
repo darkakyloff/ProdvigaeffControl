@@ -16,7 +16,7 @@ public class TaskTimeChecker
     {
         LocalDateTime now = LocalDateTime.now();
 
-        Set<Task> allTasks = MegaplanTask.getAllTasks();
+        Set<Task> allTasks = MegaplanTask.getRecentTasksWithSubtasks();
 
         LocalDateTime cutoffDate = now.minusHours(24);
         List<Task> recentTasks = allTasks.stream()

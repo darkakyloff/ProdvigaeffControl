@@ -4,6 +4,7 @@ import ru.prodvigaeff.control.core.module.ModuleRegistry;
 import ru.prodvigaeff.control.core.scheduler.Timer;
 import ru.prodvigaeff.control.megaplan.managers.MegaplanTask;
 import ru.prodvigaeff.control.modules.cache.CacheCleanupModule;
+import ru.prodvigaeff.control.modules.closedtasktime.ClosedTaskTimeAuditModule;
 import ru.prodvigaeff.control.modules.commentquality.CommentQualityAuditModule;
 import ru.prodvigaeff.control.modules.taskhierarchy.TaskHierarchyAuditModule;
 import ru.prodvigaeff.control.modules.tasktime.TaskTimeAuditModule;
@@ -114,6 +115,7 @@ public class Application
             ModuleRegistry.register(new TaskHierarchyAuditModule(emailSender));
             ModuleRegistry.register(new CommentQualityAuditModule(emailSender));
             ModuleRegistry.register(new TaskTimeAuditModule(emailSender));
+            ModuleRegistry.register(new ClosedTaskTimeAuditModule(emailSender));
 
             ModuleRegistry.register(new CacheCleanupModule());
 

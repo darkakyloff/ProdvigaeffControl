@@ -15,7 +15,7 @@ public class WorkTimeChecker
 {
     public List<WorkTimeViolation> checkViolations(LocalDateTime currentTime)
     {
-        Set<Task> tasks = MegaplanTask.getAllTasks();
+        Set<Task> tasks = MegaplanTask.getRecentTasksWithSubtasks();
         List<WorkTimeViolation> violations = new ArrayList<>();
 
         ZonedDateTime currentMsk = currentTime.atZone(DateUtil.MSK_ZONE);

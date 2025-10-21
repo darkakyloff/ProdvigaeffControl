@@ -17,62 +17,11 @@ import java.util.stream.Collectors;
 public class MegaplanTask
 {
     private static final String MEGAPLAN_API_KEY = EnvUtil.get("MEGAPLAN_API_KEY");
-    private static final int BATCH_SIZE = EnvUtil.getInt("MEGAPLAN_BATCH_SIZE", 20);
-    private static final int THREAD_POOL_SIZE = EnvUtil.getInt("MEGAPLAN_THREAD_POOL_SIZE", 5);
+    private static final int BATCH_SIZE = EnvUtil.getInt("MEGAPLAN_BATCH_SIZE", 50);
+    private static final int THREAD_POOL_SIZE = EnvUtil.getInt("MEGAPLAN_THREAD_POOL_SIZE", 10);
     private static final ExecutorService executor = Executors.newFixedThreadPool(THREAD_POOL_SIZE);
 
     private static final Map<String, Task.Employee> employeeCache = new ConcurrentHashMap<>();
-
-    public static Set<Task> getAllTasks()
-    {
-        Set<Task> allTasks = new HashSet<>();
-        String pageAfter = null;
-        boolean hasMore = true;
-        int pageCount = 0;
-
-        while (hasMore)
-        {
-            pageCount++;
-            String url = buildTaskUrl(pageAfter);
-
-            HttpResponse response = HttpBuilder
-                    .get(url)
-                    .auth(MEGAPLAN_API_KEY)
-                    .execute();
-
-            if (!response.isSuccess())
-            {
-                Logger.error("Ошибка получения задач на странице " + pageCount + ": " + response.getStatusCode());
-                break;
-            }
-
-            Map<String, Object> jsonResponse = JsonUtil.fromJson(response.getBody(), Map.class);
-            Map<String, Object> meta = (Map) jsonResponse.get("meta");
-            Map<String, Object> pagination = (Map) meta.get("pagination");
-
-            hasMore = (Boolean) pagination.get("hasMoreNext");
-            List<Map<String, Object>> tasksData = (List) jsonResponse.get("data");
-
-            List<Task> pageTasks = new ArrayList<>();
-            for (Map<String, Object> taskData : tasksData)
-            {
-                Task task = parseTask(taskData);
-                if (task != null)
-                {
-                    pageTasks.add(task);
-                    pageAfter = task.getId();
-                }
-            }
-
-            loadCommentsForTasks(pageTasks);
-            allTasks.addAll(pageTasks);
-
-            Logger.debug("Страница " + pageCount + ": получено " + tasksData.size() + " задач, всего: " + allTasks.size());
-        }
-
-        Logger.debug("Всего получено задач: " + allTasks.size() + " за " + pageCount + " страниц");
-        return allTasks;
-    }
 
     private static void loadCommentsForTasks(List<Task> tasks)
     {
@@ -99,8 +48,6 @@ public class MegaplanTask
             {
                 List<Task.TaskComment> comments = getTaskComments(task.getId());
                 task.setComments(comments);
-
-                Thread.sleep(10);
             }
             catch (Exception e)
             {
@@ -337,7 +284,6 @@ public class MegaplanTask
             Object value = workTimeData.get("value");
             if (value == null) return 0.0;
 
-            // Значение приходит в секундах, конвертируем в часы
             if (value instanceof Integer) return ((Integer) value) / 3600.0;
             if (value instanceof Double) return ((Double) value) / 3600.0;
             if (value instanceof Long) return ((Long) value) / 3600.0;
@@ -436,6 +382,119 @@ public class MegaplanTask
             Thread.currentThread().interrupt();
         }
         Logger.info("MegaplanTask executor остановлен");
+    }
+
+    public static Set<Task> getRecentTasksWithSubtasks()
+    {
+        long startTime = System.currentTimeMillis();
+        Logger.debug("Начинаем загрузку недавних задач с подзадачами...");
+        
+        Set<Task> mainTasks = new HashSet<>();
+        String url = buildTaskUrl(null);
+        
+        HttpResponse response = HttpBuilder
+                .get(url)
+                .auth(MEGAPLAN_API_KEY)
+                .execute();
+        
+        if (!response.isSuccess())
+        {
+            Logger.error("Ошибка получения главных задач: " + response.getStatusCode());
+            return mainTasks;
+        }
+        
+        Map<String, Object> jsonResponse = JsonUtil.fromJson(response.getBody(), Map.class);
+        List<Map<String, Object>> tasksData = (List) jsonResponse.get("data");
+        
+        List<Task> pageTasks = new ArrayList<>();
+        for (Map<String, Object> taskData : tasksData)
+        {
+            Task task = parseTask(taskData);
+            if (task != null)
+            {
+                pageTasks.add(task);
+            }
+        }
+        
+        Logger.debug("Получено " + pageTasks.size() + " главных задач");
+        
+        loadCommentsForTasks(pageTasks);
+        mainTasks.addAll(pageTasks);
+        
+        List<String> allSubtaskIds = pageTasks.stream()
+                .filter(task -> task.getSubtaskIds() != null && !task.getSubtaskIds().isEmpty())
+                .flatMap(task -> task.getSubtaskIds().stream())
+                .collect(Collectors.toList());
+        
+        Logger.debug("Найдено " + allSubtaskIds.size() + " подзадач для загрузки");
+        
+        if (allSubtaskIds.isEmpty())
+        {
+            Logger.debug("Подзадачи не найдены, возвращаем только главные задачи");
+            return mainTasks;
+        }
+        
+        List<List<String>> batches = createBatches(allSubtaskIds, BATCH_SIZE);
+        Logger.debug("Разбили на " + batches.size() + " батчей по " + BATCH_SIZE + " подзадач");
+        
+        List<CompletableFuture<List<Task>>> futures = batches.stream()
+                .map(batch -> CompletableFuture.supplyAsync(() -> loadSubtaskBatch(batch), executor))
+                .collect(Collectors.toList());
+        
+        List<Task> subtasks = futures.stream()
+                .map(CompletableFuture::join)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+        
+        Logger.debug("Загружено " + subtasks.size() + " подзадач");
+        
+        loadCommentsForTasks(subtasks);
+        
+        mainTasks.addAll(subtasks);
+        Logger.debug("Всего задач с подзадачами: " + mainTasks.size());
+
+        long endTime = System.currentTimeMillis();
+        long duration = endTime - startTime;
+
+        Logger.debug("=== СТАТИСТИКА ЗАГРУЗКИ ===");
+        Logger.debug("Время выполнения: " + duration + " мс (" + (duration / 1000.0) + " сек)");
+        Logger.debug("Главных задач: " + pageTasks.size());
+        Logger.debug("Подзадач загружено: " + subtasks.size());
+        Logger.debug("Всего задач: " + mainTasks.size());
+        Logger.debug("Среднее кол-во подзадач на задачу: " +
+                (pageTasks.isEmpty() ? 0 : allSubtaskIds.size() / pageTasks.size()));
+        Logger.debug("Батчей обработано: " + batches.size());
+        Logger.debug("Скорость: " + (mainTasks.isEmpty() ? 0 : duration / mainTasks.size()) + " мс на задачу");
+        Logger.debug("=========================");
+
+
+        return mainTasks;
+    }
+    
+    private static List<Task> loadSubtaskBatch(List<String> subtaskIds)
+    {
+        List<Task> batchTasks = new ArrayList<>();
+        
+        for (String subtaskId : subtaskIds)
+        {
+            try
+            {
+                Task subtask = getTaskById(subtaskId);
+                if (subtask != null)
+                {
+                    batchTasks.add(subtask);
+                }
+                
+                Thread.sleep(10); // Задержка между запросами
+            }
+            catch (Exception e)
+            {
+                Logger.error("Ошибка загрузки подзадачи " + subtaskId + ": " + e.getMessage());
+            }
+        }
+        
+        Logger.debug("Загружен батч из " + batchTasks.size() + " подзадач");
+        return batchTasks;
     }
 
     public static Task getTaskById(String taskId)

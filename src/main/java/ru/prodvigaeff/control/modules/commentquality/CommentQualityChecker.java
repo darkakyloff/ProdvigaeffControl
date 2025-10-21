@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class CommentQualityChecker
 {
-    private static final double MIN_HOURS_TO_CHECK = 1.0;
+    private static final double MIN_HOURS_TO_CHECK = 4.0;
     private final AIAnalysisService aiService;
 
     public CommentQualityChecker()
@@ -23,7 +23,7 @@ public class CommentQualityChecker
 
     public List<CommentQualityViolation> checkViolations()
     {
-        Set<Task> tasks = MegaplanTask.getAllTasks();
+        Set<Task> tasks = MegaplanTask.getRecentTasksWithSubtasks();
         List<CommentQualityViolation> violations = new ArrayList<>();
 
         LocalDateTime now = LocalDateTime.now(DateUtil.MSK_ZONE);
